@@ -9,6 +9,11 @@ import pandas as pd
 import codecs
 from lxml import etree
 
+import sentry_sdk
+sentry_sdk.init("https://265f6bec3b314810be9c3d29091fcceb@sentry.io/1452280")
+from sentry_sdk import capture_exception
+from sentry_sdk import configure_scope
+
 from crawl_guazi import settings
 from crawl_guazi.conf import global_settings as gl
 from sqlalchemy import create_engine
