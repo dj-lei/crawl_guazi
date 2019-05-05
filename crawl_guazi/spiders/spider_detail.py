@@ -17,23 +17,48 @@ def clean_list(labels):
     return labels
 
 
+urls = {
+        'baidu': 'https://www.baidu.com/',
+        'get_cookie': 'https://m.guazi.com/cd/?ca_s=pz_baidu&ca_n=tbmkbturl'
+        }
+
+
 class SpiderDetail(scrapy.Spider):
     name = "detail"
+    cookie = settings.COOKIES
 
     def start_requests(self):
         try:
-            count = redis_con.llen('guazi_details')
-            if count != 0:
-                for i in range(0, count):
-                    url = redis_con.spop('guazi_details', timeout=5)
-                    yield scrapy.Request(url=url[1], cookies=settings.COOKIES, callback=self.parse)
+            yield scrapy.Request(url=urls['get_cookie'], cookies=settings.COOKIES, callback=self.parse)
+            yield scrapy.Request(url=urls['baidu'], callback=self.parse_null)
+
+            while True:
+                url = redis_con.spop('guazi_details')
+                if url is None:
+                    break
+                yield scrapy.Request(url=url, cookies=self.cookie, callback=self.parse_detail)
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("spider_name", self.name)
                 scope.set_extra("position", 'start_requests')
             capture_exception(e)
 
+    def parse_null(self, response):
+        pass
+
     def parse(self, response):
+        """
+        获取cookie
+        """
+        try:
+            self.cookie = parse_cookies(self.cookie, response.headers.getlist('Set-Cookie'))
+        except Exception as e:
+            with configure_scope() as scope:
+                scope.set_extra("url", response.url)
+                scope.set_extra("crawl_content", response.body)
+            capture_exception(e)
+
+    def parse_detail(self, response):
         try:
             tree = etree.HTML(response.body)
 
@@ -65,8 +90,10 @@ class SpiderDetail(scrapy.Spider):
             price = tree.xpath("//span[@class='normal-price']/text()")
             if len(price) > 0:
                 car_source['price'] = float(price[0])
-                db_operate.insert_car_source(car_source)
-
+            else:
+                price = tree.xpath("//span[@class='number-price']/text()")
+                car_source['price'] = float(price[0])
+            db_operate.insert_car_source(car_source)
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("url", response.url)

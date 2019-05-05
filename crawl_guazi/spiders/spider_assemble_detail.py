@@ -1,23 +1,49 @@
 from crawl_guazi.spiders import *
 
 
+urls = {
+        'baidu': 'https://www.baidu.com/',
+        'get_cookie': 'https://m.guazi.com/cd/?ca_s=pz_baidu&ca_n=tbmkbturl'
+        }
+
+
 class SpiderAssembleDetail(scrapy.Spider):
     name = "assemble_detail"
+    cookie = settings.COOKIES
 
     def start_requests(self):
         try:
-            count = redis_con.llen('guazi_list')
-            if count != 0:
-                for i in range(0, 30):
-                    url = redis_con.spop('guazi_list', timeout=5)
-                    yield scrapy.Request(url=url[1], cookies=settings.COOKIES, callback=self.parse)
+            yield scrapy.Request(url=urls['get_cookie'], cookies=settings.COOKIES, callback=self.parse)
+            yield scrapy.Request(url=urls['baidu'], callback=self.parse_null)
+
+            while True:
+                url = redis_con.spop('guazi_list')
+                if url is None:
+                    break
+                yield scrapy.Request(url=url, cookies=self.cookie, callback=self.parse_list)
+
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("spider_name", self.name)
                 scope.set_extra("position", 'start_requests')
             capture_exception(e)
 
+    def parse_null(self, response):
+        pass
+
     def parse(self, response):
+        """
+        获取cookie
+        """
+        try:
+            self.cookie = parse_cookies(self.cookie, response.headers.getlist('Set-Cookie'))
+        except Exception as e:
+            with configure_scope() as scope:
+                scope.set_extra("url", response.url)
+                scope.set_extra("crawl_content", response.body)
+            capture_exception(e)
+
+    def parse_list(self, response):
         try:
             tree = etree.HTML(response.body)
 
@@ -40,7 +66,7 @@ class SpiderAssembleDetail(scrapy.Spider):
                 url = response.url+'o'+str(i)+'/?act=getNext&timestamp='+str(now_time())
                 if i > 50:
                     break
-                yield scrapy.Request(url=url, cookies=settings.COOKIES, callback=self.parse_get_next)
+                yield scrapy.Request(url=url, cookies=self.cookie, callback=self.parse_get_next)
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("url", response.url)
