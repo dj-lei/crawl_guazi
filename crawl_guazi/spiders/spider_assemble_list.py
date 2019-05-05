@@ -1,6 +1,26 @@
 from crawl_guazi.spiders import *
 
+
+def assemble_list():
+    """
+    组合list
+    """
+    head = 'https://m.guazi.com/'
+    city = pd.read_csv(root_path + '/tmp/city.csv')
+    brand = pd.read_csv(root_path + '/tmp/brand.csv')
+    # 清空数据库
+    redis_con.flushdb()
+    for i in range(0, len(city)):
+        city_domain = city['domain'][i]
+        for j in range(0, len(brand)):
+            brand_url = brand['brand_url'][j]
+            url = head + city_domain + '/' + brand_url + '/'
+            redis_con.sadd('guazi_list', url)
+
+
 urls = {
+        'baidu': 'https://www.baidu.com/',
+        'get_cookie': 'https://m.guazi.com/cd/?ca_s=pz_baidu&ca_n=tbmkbturl',
         'city': 'https://m.guazi.com/ajax.php?dir=vehicle&module=GetSelectCity&pageType=list',
         'brand': 'https://m.guazi.com/cd/buy/?act=changeBrand'
         }
@@ -8,15 +28,39 @@ urls = {
 
 class SpiderAssembleList(scrapy.Spider):
     name = "assemble_list"
+    cookie = settings.COOKIES
 
     def start_requests(self):
         try:
-            yield scrapy.Request(url=urls['city'], cookies=settings.COOKIES, callback=self.parse_city)
-            yield scrapy.Request(url=urls['brand'], cookies=settings.COOKIES, callback=self.parse_brand)
+            yield scrapy.Request(url=urls['get_cookie'], cookies=settings.COOKIES, callback=self.parse)
+            yield scrapy.Request(url=urls['baidu'], callback=self.parse_null)
+
+            yield scrapy.Request(url=urls['brand'], cookies=self.cookie, callback=self.parse_brand)
+            yield scrapy.Request(url=urls['city'], cookies=self.cookie, callback=self.parse_city)
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("spider_name", self.name)
                 scope.set_extra("position", 'start_requests')
+            capture_exception(e)
+
+    def parse_null(self, response):
+        pass
+
+    def parse(self, response):
+        """
+        获取cookie
+        """
+        try:
+            key = list(urls.keys())[list(urls.values()).index(response.url)]
+            filename = root_path + '/tmp/' + key + '.html'
+            with open(filename, 'wb') as f:
+                f.write(response.body)
+            self.log('Saved file %s' % filename)
+            self.cookie = parse_cookies(self.cookie, response.headers.getlist('Set-Cookie'))
+        except Exception as e:
+            with configure_scope() as scope:
+                scope.set_extra("url", response.url)
+                scope.set_extra("crawl_content", response.body)
             capture_exception(e)
 
     def parse_city(self, response):
@@ -26,6 +70,8 @@ class SpiderAssembleList(scrapy.Spider):
             with open(filename, 'wb') as f:
                 f.write(response.body)
             self.log('Saved file %s' % filename)
+
+            self.cookie = parse_cookies(self.cookie, response.headers.getlist('Set-Cookie'))
 
             # 解析城市
             filename = root_path + '/tmp/'+key+'.html'
@@ -53,6 +99,7 @@ class SpiderAssembleList(scrapy.Spider):
                 f.write(response.body)
             self.log('Saved file %s' % filename)
 
+            self.cookie = parse_cookies(self.cookie, response.headers.getlist('Set-Cookie'))
             # 解析品牌
             f = codecs.open(root_path + '/tmp/'+key+'.html', "r", "utf-8")
             content = f.read()
@@ -64,6 +111,8 @@ class SpiderAssembleList(scrapy.Spider):
             brand_url['brand_name'] = pd.Series(brand_name)
             brand_url.to_csv(root_path + '/tmp/' + key + '.csv', index=False)
 
+            # 组合list url到redis
+            assemble_list()
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("url", response.url)

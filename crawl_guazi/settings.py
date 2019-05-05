@@ -22,7 +22,7 @@ NEWSPIDER_MODULE = 'crawl_guazi.spiders'
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -40,33 +40,18 @@ DOWNLOAD_DELAY = 5
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
-    'Accept': '*/*',
-    'Accept-Language': 'en-US,en;q=0.5',
-    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/12.0 Mobile/15A372 Safari/604.1",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Connection": "keep-alive",
+    "Host": "m.guazi.com",
+    "Referer": "https://m.guazi.com/cd/?ca_s=pz_baidu&ca_n=tbmkbturl",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/12.0 Mobile/15A372 Safari/604.1"
 }
 
-COOKIES = {'__51cke__': '',
-             '__51laig__': '3',
-             '__tins__19717059': '%7B%22sid%22%3A%201556941440015%2C%20%22vd%22%3A%202%2C%20%22expires%22%3A%201556943243709%7D',
-             '__utmganji_v20110909': 'd534f7ec-4388-40b0-f480-262956732220',
-             '_gl_tracker': '%7B%22ca_source%22%3A%22-%22%2C%22ca_name%22%3A%22-%22%2C%22ca_kw%22%3A%22-%22%2C%22ca_id%22%3A%22-%22%2C%22ca_s%22%3A%22self%22%2C%22ca_n%22%3A%22-%22%2C%22ca_i%22%3A%22-%22%2C%22sid%22%3A36282295495%7D',
-             'antipas': '4221E4f03z8Y750t5K3i724459',
-             'cainfo': '%7B%22ca_s%22%3A%22pz_baidu%22%2C%22ca_n%22%3A%22tbmkbturl%22%2C%22ca_medium%22%3A%22-%22%2C%22ca_term%22%3A%22-%22%2C%22ca_content%22%3A%22%22%2C%22ca_campaign%22%3A%22%22%2C%22ca_kw%22%3A%22-%22%2C%22keyword%22%3A%22-%22%2C%22ca_keywordid%22%3A%22-%22%2C%22scode%22%3A%2210103000312%22%2C%22ca_transid%22%3A%22%22%2C%22platform%22%3A%222%22%2C%22version%22%3A1%2C%22ca_i%22%3A%22-%22%2C%22ca_b%22%3A%22-%22%2C%22ca_a%22%3A%221904b_qgg3qi%22%2C%22display_finance_flag%22%3A%22-%22%2C%22client_ab%22%3A%22-%22%2C%22guid%22%3A%229606d532-e781-476c-d085-020dc5ca8e29%22%2C%22sessionid%22%3A%2240431990-2def-4709-8ab0-564812120f75%22%7D',
-             'cityDomain': 'www',
-             'cityGuideInfo': '2019-5-4%231',
-             'cityGuideVersion': 'B',
-             'clueSourceCode': '10103000312%2300',
-             'ganji_uuid': '3697923462868752433136',
-             'lg': '1',
-             'list_url': '%2Fchangzhou%2Fdazhong%2F',
-             'lng_lat': '0',
-             'preTime': '%7B%22last%22%3A1556941443%2C%22this%22%3A1555912819%2C%22pre%22%3A1555912819%7D',
-             'sessionid': '40431990-2def-4709-8ab0-564812120f75',
-             'user_city_id': '-1',
-             'uuid': '9606d532-e781-476c-d085-020dc5ca8e29',
-             'zg_7e763bc025fc4122af64893d9f28969f': '%7B%22sid%22%3A%201556941440337%2C%22updated%22%3A%201556941450487%2C%22info%22%3A%201556935512769%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22m.guazi.com%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22landHref%22%3A%20%22https%3A%2F%2Fm.guazi.com%2Fchangzhou%2Fdazhong%2F%22%7D',
-             'zg_did': '%7B%22did%22%3A%20%2216a43a71c1ff2-05c4b61f3b87c6-2e634637-4a574-16a43a71c22bc%22%7D'
-           }
+COOKIES = {'antipas': '4221403C87u50S537w24459', 'rfnl': 'https://m.guazi.com/cd/?ca_s=pz_baidu&ca_n=tbmkbturl'}
+
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {

@@ -25,7 +25,7 @@ class SpiderDetail(scrapy.Spider):
             count = redis_con.llen('guazi_details')
             if count != 0:
                 for i in range(0, count):
-                    url = redis_con.blpop('guazi_details', timeout=5)
+                    url = redis_con.spop('guazi_details', timeout=5)
                     yield scrapy.Request(url=url[1], cookies=settings.COOKIES, callback=self.parse)
         except Exception as e:
             with configure_scope() as scope:

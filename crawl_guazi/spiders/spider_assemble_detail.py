@@ -1,34 +1,15 @@
 from crawl_guazi.spiders import *
 
 
-def assemble_list():
-    """
-    组合list
-    """
-    head = 'https://m.guazi.com/'
-    city = pd.read_csv(root_path + '/tmp/city.csv')
-    brand = pd.read_csv(root_path + '/tmp/brand.csv')
-    # 清空数据库
-    redis_con.flushdb()
-    for i in range(0, len(city)):
-        city_domain = city['domain'][i]
-        for j in range(0, len(brand)):
-            brand_url = brand['brand_url'][j]
-            url = head + city_domain + '/' + brand_url + '/'
-            redis_con.lpush('guazi_list', url)
-
-
 class SpiderAssembleDetail(scrapy.Spider):
     name = "assemble_detail"
 
     def start_requests(self):
         try:
-            # assemble_list()
-
             count = redis_con.llen('guazi_list')
             if count != 0:
                 for i in range(0, 30):
-                    url = redis_con.blpop('guazi_list', timeout=5)
+                    url = redis_con.spop('guazi_list', timeout=5)
                     yield scrapy.Request(url=url[1], cookies=settings.COOKIES, callback=self.parse)
         except Exception as e:
             with configure_scope() as scope:
@@ -51,7 +32,7 @@ class SpiderAssembleDetail(scrapy.Spider):
             details = tree.xpath("//li[@class='list-item']/a/@href")
             for detail in details:
                 url = 'https://m.guazi.com'+detail
-                redis_con.lpush('guazi_details', url)
+                redis_con.sadd('guazi_details', url)
 
             for i in range(2, int(find_num/len(details))+1):
                 t = time.time()
@@ -73,7 +54,7 @@ class SpiderAssembleDetail(scrapy.Spider):
 
             for detail in details:
                 url = 'https://m.guazi.com' + detail
-                redis_con.lpush('guazi_details', url)
+                redis_con.sadd('guazi_details', url)
         except Exception as e:
             with configure_scope() as scope:
                 scope.set_extra("url", response.url)
