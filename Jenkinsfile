@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker 'python:3.5.2' }
+    agent any
     stages {
         stage('build') {
             steps {
