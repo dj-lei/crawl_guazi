@@ -21,5 +21,5 @@ COPY . /app/
 RUN cp /app/supervisor-app.conf /etc/supervisor/conf.d/
 
 EXPOSE 80
-
+WORKDIR /app
 CMD ["supervisord", "-n"]
