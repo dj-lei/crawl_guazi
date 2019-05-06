@@ -89,10 +89,10 @@ class SpiderDetail(scrapy.Spider):
 
             price = tree.xpath("//span[@class='normal-price']/text()")
             if len(price) > 0:
-                car_source['price'] = float(price[0])
+                car_source['price'] = float(re.findall('\d*\.\d*', price[0])[0])
             else:
                 price = tree.xpath("//span[@class='number-price']/text()")
-                car_source['price'] = float(price[0])
+                car_source['price'] = float(re.findall('\d*\.\d*', price[0])[0])
             db_operate.insert_car_source(car_source)
         except Exception as e:
             with configure_scope() as scope:
