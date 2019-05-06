@@ -3,7 +3,6 @@ import time
 import json
 import redis
 import scrapy
-import requests
 import datetime
 import pandas as pd
 import codecs
